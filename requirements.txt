@@ -1,0 +1,4 @@
+flask
+csv
+os 
+requests
