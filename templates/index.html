@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Video Learning with Arithmetic Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        #videoContainer {
+            max-width: 800px;
+            width: 100%;
+        }
+        #myVideo {
+            width: 100%;
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+        #questionContainer {
+            max-width: 800px;
+            width: 100%;
+            background: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: none;
+            text-align: center;
+        }
+        #questionContainer h2 {
+            margin-bottom: 20px;
+        }
+        .option {
+            background: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            width: 200px;
+            text-align: center;
+        }
+        .option:hover {
+            background: #0056b3;
+        }
+        #feedback {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="videoContainer">
+        <video id="myVideo" controls>
+            <source src="static/RSETI_free.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div id="questionContainer">
+        <h2 id="questionText"></h2>
+        <div id="options"></div>
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        const video = document.getElementById('myVideo');
+        const questionContainer = document.getElementById('questionContainer');
+        const questionText = document.getElementById('questionText');
+        const optionsDiv = document.getElementById('options');
+        const feedbackDiv = document.getElementById('feedback');
+
+        // Generate a random arithmetic question
+        function generateArithmeticQuestion() {
+            const operations = ['+', '-', '*', '/'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            let num1 = Math.floor(Math.random() * 20) + 1;
+            let num2 = Math.floor(Math.random() * 20) + 1;
+            let correctAnswer;
+
+            if (operation === '/') {
+                // Ensure clean division
+                correctAnswer = num1;
+                num1 = num1 * num2;
+            } else {
+                correctAnswer = eval(`${num1} ${operation} ${num2}`);
+                if (operation === '-') {
+                    // Ensure positive result for subtraction
+                    if (correctAnswer < 0) {
+                        [num1, num2] = [num2, num1];
+                        correctAnswer = num1 - num2;
+                    }
+                }
+            }
+
+            // Round division results to 2 decimal places if necessary
+            if (operation === '/') {
+                correctAnswer = Math.round(correctAnswer * 100) / 100;
+            }
+
+            const question = `What is ${num1} ${operation} ${num2}?`;
+            const options = [correctAnswer];
+            // Generate 3 wrong answers
+            while (options.length < 4) {
+                let wrongAnswer = correctAnswer + (Math.floor(Math.random() * 10) - 5);
+                if (operation === '/') {
+                    wrongAnswer = Math.round(wrongAnswer * 100) / 100;
+                }
+                if (!options.includes(wrongAnswer) && wrongAnswer !== correctAnswer && wrongAnswer >= 0) {
+                    options.push(wrongAnswer);
+                }
+            }
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+
+            return {
+                question,
+                options: options.map(opt => ({
+                    text: opt.toString(),
+                    correct: opt === correctAnswer
+                }))
+            };
+        }
+
+        // Question stop times
+        const stopTimes = [9, 21, 32, 41];
+        let currentQuestionIndex = 0;
+        let currentQuestion = null;
+
+        // Function to show question
+        function showQuestion() {
+            if (currentQuestionIndex >= stopTimes.length) return;
+            currentQuestion = generateArithmeticQuestion();
+            questionText.textContent = currentQuestion.question;
+            optionsDiv.innerHTML = '';
+            feedbackDiv.textContent = '';
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('div');
+                button.className = 'option';
+                button.textContent = option.text;
+                button.addEventListener('click', () => handleAnswer(option.correct));
+                optionsDiv.appendChild(button);
+            });
+
+            questionContainer.style.display = 'block';
+            video.pause();
+        }
+
+        // Handle answer selection
+        function handleAnswer(isCorrect) {
+            feedbackDiv.textContent = isCorrect ? 'Correct!' : 'Incorrect, try again!';
+            if (isCorrect) {
+                setTimeout(() => {
+                    questionContainer.style.display = 'none';
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex >= stopTimes.length) {
+                        // Redirect to registration if all questions are answered
+                        if (video.ended) {
+                            window.location.href = '/registration';
+                        }
+                    } else {
+                        video.play();
+                    }
+                }, 1000);
+            }
+        }
+
+        // Check video time for questions
+        video.addEventListener('timeupdate', () => {
+            const currentTime = Math.floor(video.currentTime);
+            if (currentQuestionIndex < stopTimes.length && currentTime >= stopTimes[currentQuestionIndex]) {
+                showQuestion();
+            }
+        });
+
+        // Redirect to registration on video end if all questions are answered
+        video.addEventListener('ended', () => {
+            if (currentQuestionIndex >= stopTimes.length) {
+                window.location.href = '/registration';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RSETI Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+    input, button {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h2>Register for RSETI Training</h2>
+
+  <form id="userForm" method="post">
+    <label for="name">Full Name:</label>
+    <input type="text" id="name" name="name" onfocus="speak('Please enter your full name')">
+
+    <label for="phone">Phone Number:</label>
+    <input type="tel" id="phone" name="phone" onfocus="speak('Please enter your mobile number')">
+
+    <label for="city">Address:</label>
+    <input type="text" id="city" name="city" onfocus="speak('Please enter  your Address')">
+
+    <button type="submit" onclick="speak('Thank you for registering. Submitting your details.')">Submit</button>
+  </form>
+
+  <script>
+    function speak(text) {
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.lang = 'en-US';
+      window.speechSynthesis.speak(speech);
+    }
+  </script>
+</body>
+</html>
