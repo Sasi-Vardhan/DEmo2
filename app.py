@@ -50,7 +50,7 @@ def registration():
         return redirect(url_for('index'))
 
     # Handle GET request (render registration.html)
-    return render_template('registration.html')
+    return render_template('Registration.html')
 
 # Route to serve the video file (optional, for debugging)
 @app.route('/static/RSETI_free.mp4')
